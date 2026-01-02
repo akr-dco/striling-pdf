@@ -45,29 +45,18 @@ pipeline {
             }
         }
 
-       stage('Sync Repository') {
+        stage('Sync Repository') {
     steps {
         sshagent(['privatekey-akr']) {
-            script {
-                if (env.DEPLOY_ENV == "PRODUCTION") {
-                    sh """
-                    rsync -avz --delete \
-                      --exclude '.git' \
-                      --exclude '.jenkins' \
-                      ./ \
-                      ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
-                    """
-                } else {
-                    sh """
-                    rsync -avz \
-                      --exclude '.git' \
-                      --exclude '.jenkins' \
-                      --exclude 'stirling-data' \
-                      ./ \
-                      ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
-                    """
-                }
-            }
+            sh """
+            rsync -avz \
+              --exclude '.git' \
+              --exclude '.jenkins' \
+              --exclude 'stirling-data' \
+              --exclude 'stirling-data/**' \
+              ./ \
+              ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
+            """
         }
     }
 }
