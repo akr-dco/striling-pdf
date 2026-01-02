@@ -45,19 +45,33 @@ pipeline {
             }
         }
 
-        stage('Sync Repository') {
-            steps {
-                sshagent(['privatekey-akr']) {
+       stage('Sync Repository') {
+    steps {
+        sshagent(['privatekey-akr']) {
+            script {
+                if (env.DEPLOY_ENV == "PRODUCTION") {
                     sh """
                     rsync -avz --delete \
-                        --exclude '.git' \
-                        --exclude '.jenkins' \
-                        ./ \
-                        ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
+                      --exclude '.git' \
+                      --exclude '.jenkins' \
+                      ./ \
+                      ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
+                    """
+                } else {
+                    sh """
+                    rsync -avz \
+                      --exclude '.git' \
+                      --exclude '.jenkins' \
+                      --exclude 'stirling-data' \
+                      ./ \
+                      ${TARGET_USER}@${TARGET_HOST}:${TARGET_DIR}/
                     """
                 }
             }
         }
+    }
+}
+
 
         stage('Deploy Docker Compose') {
             steps {
