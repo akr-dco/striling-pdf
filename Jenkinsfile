@@ -3,25 +3,33 @@ pipeline {
 
     environment {
         TARGET_USER = "cicd"
-        TARGET_HOST = "192.168.192.78"
+        PROD_HOST   = "192.168.150.150"
+        STAGING_HOST= "192.168.192.78"
     }
 
     stages {
 
-        stage('Resolve Target Directory') {
+        stage('Resolve Target') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main') {
-                        env.TARGET_DIR = "/home/cicd/pdf"
-                    } else if (env.BRANCH_NAME == 'staging') {
-                        env.TARGET_DIR = "/home/onprem/cicd-testing/pdf"
-                    } else {
+                        env.TARGET_HOST = env.PROD_HOST
+                        env.TARGET_DIR  = "/home/cicd/pdf"
+                        env.DEPLOY_ENV  = "PRODUCTION"
+                    } 
+                    else if (env.BRANCH_NAME == 'staging') {
+                        env.TARGET_HOST = env.STAGING_HOST
+                        env.TARGET_DIR  = "/home/cicd/pdf"
+                        env.DEPLOY_ENV  = "STAGING"
+                    } 
+                    else {
                         error "Branch ${env.BRANCH_NAME} is not allowed to deploy"
                     }
                 }
 
-                echo "Branch        : ${env.BRANCH_NAME}"
-                echo "Deploy target : ${TARGET_USER}@${TARGET_HOST}:${env.TARGET_DIR}"
+                echo "ENV    : ${DEPLOY_ENV}"
+                echo "HOST   : ${TARGET_HOST}"
+                echo "DIR    : ${TARGET_DIR}"
             }
         }
 
@@ -68,10 +76,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment SUCCESS for ${env.BRANCH_NAME}"
+            echo "✅ ${DEPLOY_ENV} DEPLOY SUCCESS (${env.BRANCH_NAME})"
         }
         failure {
-            echo "❌ Deployment FAILED for ${env.BRANCH_NAME}"
+            echo "❌ ${DEPLOY_ENV} DEPLOY FAILED (${env.BRANCH_NAME})"
         }
     }
 }
