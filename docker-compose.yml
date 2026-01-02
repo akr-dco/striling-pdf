@@ -1,0 +1,9 @@
+services:
+  dev-stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: dev-stirling-pdf
+    ports:
+      - '8082:8080'
+    volumes:
+      - ./stirling-data:/configs
+    restart: unless-stopped
